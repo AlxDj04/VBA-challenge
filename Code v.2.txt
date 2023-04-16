@@ -1,0 +1,90 @@
+Sub stockAnalysis()
+
+Dim ticker As String
+Dim openPrice As Double
+Dim closePrice As Double
+Dim yearlyChange As Double
+Dim percentChange As Double
+Dim totalVolume As Double
+Dim lastRow As Long
+Dim i As Long
+Dim j As Long
+Dim maxPercentIncrease As Double
+Dim maxPercentDecrease As Double
+Dim maxTotalVolume As Double
+Dim maxPercentIncreaseTicker As String
+Dim maxPercentDecreaseTicker As String
+Dim maxTotalVolumeTicker As String
+
+j = 2
+
+For Each ws In Worksheets
+    
+    lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    maxPercentIncrease = -999999999
+    maxPercentDecrease = 999999999
+    maxTotalVolume = 0
+    
+    Range("I" & j - 1).Value = ws.Name
+    
+    For i = 2 To lastRow
+        
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+            
+            ticker = ws.Cells(i, 1).Value
+            closePrice = ws.Cells(i, 6).Value
+            totalVolume = Application.WorksheetFunction.Sum(Range(ws.Cells(j, 7), ws.Cells(i, 7)))
+            openPrice = ws.Cells(j, 3).Value
+            yearlyChange = closePrice - openPrice
+            
+            If openPrice = 0 Then
+                percentChange = 0
+            Else
+                percentChange = yearlyChange / openPrice
+            End If
+            
+            ws.Cells(j, 9).Value = ticker
+            ws.Cells(j, 10).Value = yearlyChange
+            ws.Cells(j, 11).Value = percentChange
+            ws.Cells(j, 12).Value = totalVolume
+            
+            If percentChange > maxPercentIncrease Then
+                maxPercentIncrease = percentChange
+                maxPercentIncreaseTicker = ticker
+            End If
+            
+            If percentChange < maxPercentDecrease Then
+                maxPercentDecrease = percentChange
+                maxPercentDecreaseTicker = ticker
+            End If
+            
+            If totalVolume > maxTotalVolume Then
+                maxTotalVolume = totalVolume
+                maxTotalVolumeTicker = ticker
+            End If
+            
+            j = j + 1
+            
+        End If
+    
+    Next i
+    
+    ws.Range("O" & ws.Index).Value = maxPercentIncreaseTicker
+    ws.Range("P" & ws.Index).Value = maxPercentIncrease
+    ws.Range("Q" & ws.Index).Value = maxPercentDecreaseTicker
+    ws.Range("R" & ws.Index).Value = maxTotalVolumeTicker
+    
+    lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    
+    For i = 2 To lastRow
+        If ws.Cells(i, 11).Value > 0 Then
+            ws.Cells(i, 11).Interior.Color = vbGreen
+        ElseIf ws.Cells(i, 11).Value < 0 Then
+            ws.Cells(i, 11).Interior.Color = vbRed
+        End If
+    Next i
+    
+    j = 2
+    
+Next ws
+End Sub
